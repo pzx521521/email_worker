@@ -1,0 +1,4 @@
+name = "email_worker"
+main = "src/index.js"
+compatibility-date=2024-12-30
+usage_model = "unbound"
