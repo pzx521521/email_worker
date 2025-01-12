@@ -24,7 +24,7 @@ export default {
 
   async email(event, env, ctx) {
     const rawEmail = await streamToArrayBuffer(event.raw, event.rawSize);
-    const parser = new PostalMime.default();
+    const parser = new PostalMime();
     const parsedEmail = await parser.parse(rawEmail);
     console.log("Mail subject: ", parsedEmail.subject);
     console.log("Mail message ID", parsedEmail.messageId);
