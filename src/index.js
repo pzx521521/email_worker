@@ -29,7 +29,7 @@ export default {
       method: 'POST',
       headers: headers,
       body: JSON.stringify([
-        ["scan", "0"],
+        ["scan", "0", "COUNT", "1000"],
         ["hgetall", "*"]
       ])
     });
