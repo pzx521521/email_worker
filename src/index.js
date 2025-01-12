@@ -17,28 +17,45 @@ async function streamToArrayBuffer(stream, streamSize) {
 
 export default {
   async fetch(request, env, ctx) {
-    const redisUrl = `${env.UPSTASH_REDIS_REST_URL}`
-    const headers = {
-      'Authorization': `Bearer ${env.UPSTASH_REDIS_REST_TOKEN}`,
-      'Content-Type': 'application/json'
-    };
+    try {
+      const headers = {
+        'Authorization': `Bearer ${env.UPSTASH_REDIS_REST_TOKEN}`,
+        'Content-Type': 'application/json'
+      };
 
-    const pipelineResponse = await fetch(`${redisUrl}/pipeline`, {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify([
-        ["scan", "0", "COUNT", "1000"],
-        ["hgetall", "*"]
-      ])
-    });
+      const pipelineResponse = await fetch(`${env.UPSTASH_REDIS_REST_URL}/pipeline`, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify([
+          ["scan", "0", "COUNT", "1000"],
+          ["hgetall", "*"]
+        ])
+      });
 
-    const data = await pipelineResponse.json();
-    return new Response(JSON.stringify(data.result, null, 2), {
-      headers: {
-        'content-type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+      if (!pipelineResponse.ok) {
+        throw new Error(`HTTP error! status: ${pipelineResponse.status}`);
       }
-    });
+
+      const data = await pipelineResponse.json();
+      return new Response(JSON.stringify(data.result), {
+        headers: {
+          'content-type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      return new Response(JSON.stringify({
+        error: '处理请求时发生错误',
+        message: error.message
+      }), {
+        status: 500,
+        headers: {
+          'content-type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+    }
   },
 
   async email(message, env, ctx) {
