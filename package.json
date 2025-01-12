@@ -9,5 +9,7 @@
     "dev": "wrangler dev",
     "publish": "wrangler publish"
   },
-  "dependencies": {}
+  "dependencies": {
+    "postal-mime": "^2.4.1"
+  }
 }
