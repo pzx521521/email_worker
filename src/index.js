@@ -55,6 +55,6 @@ export default {
     });
     const resp = await response.text()
     console.log(body)
-    await event.forward("pzx521521@qq.com")
+    await message.forward("pzx521521@qq.com")
   },
 };
