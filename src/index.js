@@ -16,6 +16,12 @@ async function streamToArrayBuffer(stream, streamSize) {
 }
 
 export default {
+  async fetch(request, env, ctx) {
+    return new Response('Hello worker!', {
+      headers: { 'content-type': 'text/plain' },
+    })
+  },
+
   async email(event, env, ctx) {
     const rawEmail = await streamToArrayBuffer(event.raw, event.rawSize);
     const parser = new PostalMime.default();
