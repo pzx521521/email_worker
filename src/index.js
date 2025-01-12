@@ -1,8 +1,5 @@
 import PostalMime from "postal-mime";
 
-const headers = { "Authorization": `Bearer ${env.UPSTASH_REDIS_REST_TOKEN}` }
-const redisUrl = `${env.UPSTASH_REDIS_REST_URL}`
-
 async function streamToArrayBuffer(stream, streamSize) {
   let result = new Uint8Array(streamSize);
   let bytesRead = 0;
@@ -20,12 +17,13 @@ async function streamToArrayBuffer(stream, streamSize) {
 
 export default {
   async fetch(request, env, ctx) {
+    const redisUrl = `${env.UPSTASH_REDIS_REST_URL}`
     const headers = {
-      'Authorization': 'Bearer AWvZAAIjcDE3ZjlkZTlkZDZhYWY0ZmVhYTRlNzJhYzEyOTdjMDBiZHAxMA',
+      'Authorization': `Bearer ${env.UPSTASH_REDIS_REST_TOKEN}`,
       'Content-Type': 'application/json'
     };
 
-    const pipelineResponse = await fetch('https://modern-baboon-27609.upstash.io/pipeline', {
+    const pipelineResponse = await fetch(`${redisUrl}/pipeline`, {
       method: 'POST',
       headers: headers,
       body: JSON.stringify([
@@ -44,6 +42,10 @@ export default {
   },
 
   async email(message, env, ctx) {
+    const redisUrl = `${env.UPSTASH_REDIS_REST_URL}`
+    const headers = {
+      'Authorization': `Bearer ${env.UPSTASH_REDIS_REST_TOKEN}`,
+    };
     const rawEmail = await streamToArrayBuffer(message.raw, message.rawSize);
     const parser = new PostalMime();
     const parsedEmail = await parser.parse(rawEmail);
