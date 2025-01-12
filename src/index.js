@@ -1,5 +1,8 @@
 import PostalMime from "postal-mime";
 
+const headers = { "Authorization": "Bearer AWvZAAIjcDE3ZjlkZTlkZDZhYWY0ZmVhYTRlNzJhYzEyOTdjMDBiZHAxMA" }
+const redisUrl = "https://modern-baboon-27609.upstash.io"
+
 async function streamToArrayBuffer(stream, streamSize) {
   let result = new Uint8Array(streamSize);
   let bytesRead = 0;
@@ -17,9 +20,18 @@ async function streamToArrayBuffer(stream, streamSize) {
 
 export default {
   async fetch(request, env, ctx) {
-    return new Response('Hello worker!', {
-      headers: { 'content-type': 'text/plain' },
-    })
+    // 使用 SCAN 命令一次性获取所有数据
+    const response = await fetch(`${redisUrl}/scan`, {
+      headers: headers
+    });
+    const data = await response.json();
+
+    return new Response(JSON.stringify(data.result, null, 2), {
+      headers: {
+        'content-type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
+    });
   },
 
   async email(message, env, ctx) {
@@ -43,8 +55,6 @@ export default {
     const { from, to } = message;
     const subject = message.headers.get("subject")
     const redisKey = `${from}|${to}`;  // Redis 键名
-    const redisUrl = "https://modern-baboon-27609.upstash.io"
-    const headers = { "Authorization": "Bearer AWvZAAIjcDE3ZjlkZTlkZDZhYWY0ZmVhYTRlNzJhYzEyOTdjMDBiZHAxMA" }
     const ttl = 60 * 15;  // 设置 15 分钟的过期时间（单位：秒）
     // const headersObj = Object.fromEntries(message.headers);
     const body = { "subject": subject, "text": parsedEmail.text };  // 这是邮件正文部分
