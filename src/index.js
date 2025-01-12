@@ -36,7 +36,6 @@ export default {
       }
 
       const data = await pipelineResponse.json();
-      testData = { "msg": "hello worker" }
       return new Response(JSON.stringify(data), {
         headers: {
           'content-type': 'application/json',
