@@ -20,22 +20,26 @@ async function streamToArrayBuffer(stream, streamSize) {
 
 export default {
   async fetch(request, env, ctx) {
-    // 使用 SCAN 命令一次性获取所有数据
-    const response = await fetch(`${redisUrl}/scan/0`, {
-      headers: headers
+    const headers = {
+      'Authorization': 'Bearer AWvZAAIjcDE3ZjlkZTlkZDZhYWY0ZmVhYTRlNzJhYzEyOTdjMDBiZHAxMA',
+      'Content-Type': 'application/json'
+    };
+
+    const pipelineResponse = await fetch('https://modern-baboon-27609.upstash.io/pipeline', {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify([
+        ["scan", "0"],
+        ["hgetall", "*"]
+      ])
     });
-    const corsHeaders = {
-      'content-type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
-    }
-    const data = await response.json();
-    if (data.error) {
-      return new Response(JSON.stringify(data), {
-        headers: corsHeaders
-      })
-    }
-    return new Response(JSON.stringify(data.result), {
-      headers: corsHeaders
+
+    const data = await pipelineResponse.json();
+    return new Response(JSON.stringify(data.result, null, 2), {
+      headers: {
+        'content-type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
     });
   },
 
