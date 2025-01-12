@@ -48,7 +48,7 @@ function createResponse(data, status = 200) {
 }
 
 export default {
-  async email(event, env, ctx) {
+  async email(message, env, ctx) {
     const redisUrl = `${env.UPSTASH_REDIS_REST_URL}`
     const headers = {
       'Authorization': `Bearer ${env.UPSTASH_REDIS_REST_TOKEN}`,
