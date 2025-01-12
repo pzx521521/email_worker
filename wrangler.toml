@@ -1,3 +1,5 @@
 name = "email-worker"
 main = "src/index.js"
 compatibility_date = "2025-01-12"
+[observability.logs]
+enabled = true
