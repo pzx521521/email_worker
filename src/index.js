@@ -1,7 +1,7 @@
 import PostalMime from "postal-mime";
 
-const headers = { "Authorization": "Bearer AWvZAAIjcDE3ZjlkZTlkZDZhYWY0ZmVhYTRlNzJhYzEyOTdjMDBiZHAxMA" }
-const redisUrl = "https://modern-baboon-27609.upstash.io"
+const headers = { "Authorization": `Bearer ${env.UPSTASH_REDIS_REST_TOKEN}` }
+const redisUrl = `${env.UPSTASH_REDIS_REST_URL}`
 
 async function streamToArrayBuffer(stream, streamSize) {
   let result = new Uint8Array(streamSize);

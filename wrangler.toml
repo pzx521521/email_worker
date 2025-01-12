@@ -3,3 +3,6 @@ main = "src/index.js"
 compatibility_date = "2025-01-12"
 [observability.logs]
 enabled = true
+
+[vars]
+UPSTASH_REDIS_REST_URL = "https://modern-baboon-27609.upstash.io"
