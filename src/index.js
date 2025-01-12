@@ -49,23 +49,41 @@ function createResponse(data, status = 200) {
 
 export default {
   async email(event, env, ctx) {
-    const rawEmail = await streamToArrayBuffer(event.raw, event.rawSize);
+    const redisUrl = `${env.UPSTASH_REDIS_REST_URL}`
+    const headers = {
+      'Authorization': `Bearer ${env.UPSTASH_REDIS_REST_TOKEN}`,
+    };
+    const rawEmail = await streamToArrayBuffer(message.raw, message.rawSize);
     const parser = new PostalMime();
     const parsedEmail = await parser.parse(rawEmail);
-    console.log("Mail subject: ", parsedEmail.subject);
-    console.log("Mail message ID", parsedEmail.messageId);
-    console.log("HTML version of Email: ", parsedEmail.html);
-    console.log("Text version of Email: ", parsedEmail.text);
-    if (parsedEmail.attachments.length == 0) {
-      console.log("No attachments");
-    } else {
-      parsedEmail.attachments.forEach((att) => {
-        console.log("Attachment: ", att.filename);
-        console.log("Attachment disposition: ", att.disposition);
-        console.log("Attachment mime type: ", att.mimeType);
-        console.log("Attachment size: ", att.content.byteLength);
-      });
-    }
+    // console.log("Mail subject: ", parsedEmail.subject);
+    // console.log("Mail message ID", parsedEmail.messageId);
+    // console.log("HTML version of Email: ", parsedEmail.html);
+    // console.log("Text version of Email: ", parsedEmail.text);
+    // if (parsedEmail.attachments.length == 0) {
+    //   console.log("No attachments");
+    // } else {
+    //   parsedEmail.attachments.forEach((att) => {
+    //     console.log("Attachment: ", att.filename);
+    //     console.log("Attachment disposition: ", att.disposition);
+    //     console.log("Attachment mime type: ", att.mimeType);
+    //     console.log("Attachment size: ", att.content.byteLength);
+    //   });
+    // }
+    const { from, to } = message;
+    const subject = message.headers.get("subject")
+    const redisKey = `${from}|${to}`;  // Redis 键名
+    const ttl = 60 * 15;  // 设置 15 分钟的过期时间（单位：秒）
+    // const headersObj = Object.fromEntries(message.headers);
+    const body = { "subject": subject, "text": parsedEmail.text };  // 这是邮件正文部分
+    const response = await fetch(`${redisUrl}/set/${redisKey}?ex=${ttl}`, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(body)
+    });
+    const resp = await response.text()
+    console.log(body)
+    await message.forward("pzx521521@qq.com")
   },
 
   async fetch(request, env, ctx) {
