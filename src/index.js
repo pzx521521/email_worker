@@ -22,8 +22,8 @@ export default {
     })
   },
 
-  async email(event, env, ctx) {
-    const rawEmail = await streamToArrayBuffer(event.raw, event.rawSize);
+  async email(message, env, ctx) {
+    const rawEmail = await streamToArrayBuffer(message.raw, message.rawSize);
     const parser = new PostalMime();
     const parsedEmail = await parser.parse(rawEmail);
     console.log("Mail subject: ", parsedEmail.subject);
@@ -47,7 +47,7 @@ export default {
     const headers = { "Authorization": "Bearer AWvZAAIjcDE3ZjlkZTlkZDZhYWY0ZmVhYTRlNzJhYzEyOTdjMDBiZHAxMA" }
     const ttl = 60 * 15;  // 设置 15 分钟的过期时间（单位：秒）
     // const headersObj = Object.fromEntries(message.headers);
-    const body = { "subject": subject, "body": message.body, "text": message.text, "html": message.html };  // 这是邮件正文部分
+    const body = { "subject": subject, "text": parsedEmail.text };  // 这是邮件正文部分
     const response = await fetch(`${redisUrl}/set/${redisKey}?ex=${ttl}`, {
       method: 'POST',
       headers: headers,
