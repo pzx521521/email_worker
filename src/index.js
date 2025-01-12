@@ -22,8 +22,6 @@ export default {
         'Authorization': `Bearer ${env.UPSTASH_REDIS_REST_TOKEN}`,
         'Content-Type': 'application/json'
       };
-      console.log(env.UPSTASH_REDIS_REST_URL)
-      console.log(env.UPSTASH_REDIS_REST_TOKEN)
       const pipelineResponse = await fetch(`${env.UPSTASH_REDIS_REST_URL}/pipeline`, {
         method: 'POST',
         headers: headers,
@@ -38,7 +36,8 @@ export default {
       }
 
       const data = await pipelineResponse.json();
-      return new Response(JSON.stringify(data.result), {
+      testData = { "msg": "hello worker" }
+      return new Response(JSON.stringify(data), {
         headers: {
           'content-type': 'application/json',
           'Access-Control-Allow-Origin': '*'
