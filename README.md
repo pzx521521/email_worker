@@ -8,3 +8,8 @@
 ## 使用
 
 主要应用于注册的验证码
+
+## redis 需要配置
+
+UPSTASH_REDIS_REST_URL
+UPSTASH_REDIS_REST_TOKEN
