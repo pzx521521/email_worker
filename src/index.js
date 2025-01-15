@@ -36,7 +36,15 @@ async function getValues(url, headers, keys) {
   const valuesData = await valuesResponse.json();
   return valuesData.result;
 }
-
+function createResponseText(data, status = 200) {
+  return new Response(data, {
+    status,
+    headers: {
+      'content-type': 'text/plain',
+      'Access-Control-Allow-Origin': '*'
+    }
+  });
+}
 function createResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -120,12 +128,21 @@ export default {
         // 如果指定了数字位数过滤器
         if (digitFilter) {
           const digitLength = parseInt(digitFilter);
-          const filteredResult = result.filter(item => {
-            // 在 value 中查找指定位数的数字
-            const matches = item.value.match(/\d{${digitLength}}/g);
-            return matches !== null;
+          const regex = new RegExp(`\\b\\d{${digitLength}}\\b`);
+          const filteredResult = result.find(item => {
+            try {
+              const content = JSON.parse(item.value).content;
+              return regex.test(content);
+            } catch {
+              return false;
+            }
           });
-          return createResponse({ result: filteredResult });
+
+          if (filteredResult) {
+            const match = JSON.parse(filteredResult.value).content.match(regex);
+            return createResponseText(match ? match[0] : '');
+          }
+          return createResponseText('');
         }
 
         return createResponse({ result });
@@ -142,3 +159,8 @@ export default {
     }
   },
 };
+
+// 为了支持 CommonJS require
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { default: exports.default };
+}
