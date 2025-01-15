@@ -131,7 +131,7 @@ export default {
           const regex = new RegExp(`\\b\\d{${digitLength}}\\b`);
           const filteredResult = result.find(item => {
             try {
-              const content = JSON.parse(item.value).content;
+              const content = JSON.parse(item.value).content.replace(/\s+/g, '');
               return regex.test(content);
             } catch {
               return false;
@@ -139,7 +139,8 @@ export default {
           });
 
           if (filteredResult) {
-            const match = JSON.parse(filteredResult.value).content.match(regex);
+            const content = JSON.parse(filteredResult.value).content.replace(/\s+/g, '');
+            const match = content.match(regex);
             return createResponseText(match ? match[0] : '');
           }
           return createResponseText('');
