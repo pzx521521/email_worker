@@ -93,9 +93,11 @@ export default {
         'Content-Type': 'application/json'
       };
 
-      // 检查是否是请求所有数据（包括值）
+      // 检查请求路径
       const url = new URL(request.url);
-      const isAllData = url.pathname === '/all';
+      const pathParts = url.pathname.split('/').filter(Boolean); // 移除空字符串
+      const isAllData = pathParts[0] === 'all';
+      const digitFilter = pathParts[1]; // 获取数字过滤器（如果存在）
 
       // 获取所有键
       const keys = await getKeys(env.UPSTASH_REDIS_REST_URL, headers);
@@ -114,6 +116,17 @@ export default {
           key: key,
           value: values[index]
         }));
+
+        // 如果指定了数字位数过滤器
+        if (digitFilter) {
+          const digitLength = parseInt(digitFilter);
+          const filteredResult = result.filter(item => {
+            // 在 value 中查找指定位数的数字
+            const matches = item.value.match(/\d{${digitLength}}/g);
+            return matches !== null;
+          });
+          return createResponse({ result: filteredResult });
+        }
 
         return createResponse({ result });
       }
