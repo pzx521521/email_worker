@@ -2,7 +2,7 @@ name = "email-worker"
 main = "src/index.js"
 compatibility_date = "2024-12-30"
 [observability.logs]
-enabled = trueb
+enabled = true
 
 [vars]
 UPSTASH_REDIS_REST_URL = "https://modern-baboon-27609.upstash.io"
