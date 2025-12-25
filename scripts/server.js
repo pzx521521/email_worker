@@ -23,7 +23,7 @@ app.all('*', async (req, res) => {
         });
         const env = {
             UPSTASH_REDIS_REST_URL: 'https://modern-baboon-27609.upstash.io',
-            UPSTASH_REDIS_REST_TOKEN: ''
+            UPSTASH_REDIS_REST_TOKEN: 'AWvZAAIjcDE3ZjlkZTlkZDZhYWY0ZmVhYTRlNzJhYzEyOTdjMDBiZHAxMA'
         }
         // 调用 Worker 的 fetch 处理函数
         const workerResponse = await worker.fetch(workerRequest, env);
