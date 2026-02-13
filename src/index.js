@@ -15,8 +15,11 @@ async function streamToArrayBuffer(stream, streamSize) {
   return result;
 }
 
-async function getKeys(url, headers) {
-  const keysResponse = await fetch(`${url}/scan/0/COUNT/1000`, {
+async function getKeys(url, headers, pattern = null) {
+  const scanUrl = pattern
+    ? `${url}/scan/0/MATCH/${encodeURIComponent(pattern)}/COUNT/1000`
+    : `${url}/scan/0/COUNT/1000`;
+  const keysResponse = await fetch(scanUrl, {
     headers: headers
   });
 
@@ -25,6 +28,7 @@ async function getKeys(url, headers) {
   }
 
   const keysData = await keysResponse.json();
+  //[ cursor, keys ]
   return keysData.result[1]; // 返回键列表
 }
 
@@ -55,106 +59,122 @@ function createResponse(data, status = 200) {
   });
 }
 
+// 创建Redis请求头
+function createRedisHeaders(env) {
+  return {
+    'Authorization': `Bearer ${env.UPSTASH_REDIS_REST_TOKEN}`,
+    'Content-Type': 'application/json'
+  };
+}
+
+// 获取键值对列表
+async function getKeyValuePairs(env, pattern = null) {
+  const headers = createRedisHeaders(env);
+  const keys = await getKeys(env.UPSTASH_REDIS_REST_URL, headers, pattern);
+
+  if (keys.length === 0) {
+    return [];
+  }
+
+  const values = await getValues(env.UPSTASH_REDIS_REST_URL, headers, keys);
+  return keys.map((key, index) => ({
+    key: key,
+    value: values[index]
+  }));
+}
+
+// 路由: GET /
+// 返回所有键列表，支持pattern过滤
+async function handleGetKeys(env, pattern = null) {
+  const headers = createRedisHeaders(env);
+  const keys = await getKeys(env.UPSTASH_REDIS_REST_URL, headers, pattern);
+  return createResponse({ keys });
+}
+
+// 路由: GET /all
+// 返回所有键值对，支持pattern过滤
+async function handleGetAll(env, pattern = null) {
+  const result = await getKeyValuePairs(env, pattern);
+  return createResponse({ result });
+}
+
+// 路由: GET /all/:digitFilter
+// 返回匹配指定位数数字的第一个结果，支持pattern过滤
+async function handleGetAllWithDigitFilter(env, digitFilter, pattern = null) {
+  const result = await getKeyValuePairs(env, pattern);
+
+  if (result.length === 0) {
+    return createResponseText('');
+  }
+
+  const digitLength = parseInt(digitFilter);
+  const regex = new RegExp(`\\b\\d{${digitLength}}\\b`);
+
+  const filteredResult = result.find(item => {
+    try {
+      const content = JSON.parse(item.value).content.replace(/\s+/g, '');
+      return regex.test(content);
+    } catch {
+      return false;
+    }
+  });
+
+  if (filteredResult) {
+    const content = JSON.parse(filteredResult.value).content.replace(/\s+/g, '');
+    const match = content.match(regex);
+    return createResponseText(match ? match[0] : '');
+  }
+
+  return createResponseText('');
+}
+
 export default {
-  async email(message, env, ctx) {
-    const redisUrl = `${env.UPSTASH_REDIS_REST_URL}`
-    const headers = {
-      'Authorization': `Bearer ${env.UPSTASH_REDIS_REST_TOKEN}`,
-    };
+  async email(message, env) {
+    const headers = createRedisHeaders(env);
     const rawEmail = await streamToArrayBuffer(message.raw, message.rawSize);
     const parser = new PostalMime();
     const parsedEmail = await parser.parse(rawEmail);
-    // console.log("Mail subject: ", parsedEmail.subject);
-    // console.log("Mail message ID", parsedEmail.messageId);
-    // console.log("HTML version of Email: ", parsedEmail.html);
-    // console.log("Text version of Email: ", parsedEmail.text);
-    // if (parsedEmail.attachments.length == 0) {
-    //   console.log("No attachments");
-    // } else {
-    //   parsedEmail.attachments.forEach((att) => {
-    //     console.log("Attachment: ", att.filename);
-    //     console.log("Attachment disposition: ", att.disposition);
-    //     console.log("Attachment mime type: ", att.mimeType);
-    //     console.log("Attachment size: ", att.content.byteLength);
-    //   });
-    // }
-    const { from, to } = message;
-    const headerFrom = message.headers.get("from");  // 真正发件人
-    const subject = message.headers.get("subject")
-    const redisKey = `${headerFrom}|${to}`;  // Redis 键名
-    const ttl = 60 * 15;  // 设置 15 分钟的过期时间（单位：秒）
-    // const headersObj = Object.fromEntries(message.headers);
-    // 原始正文
+
+    const { to } = message;
+    const headerFrom = message.headers.get("from");
+    const subject = message.headers.get("subject");
+    const redisKey = `${headerFrom}|${to}`;
+    const ttl = 60 * 15;
+
     let content = parsedEmail.text ? parsedEmail.text : parsedEmail.html;
-    // 新增这一行：清理尾部的 \u0000
     content = content.replace(/\u0000+/g, "");
-    const body = { "subject": subject, "content": content };  // 这是邮件正文部分
-    const response = await fetch(`${redisUrl}/set/${redisKey}?ex=${ttl}`, {
+
+    const body = { "subject": subject, "content": content };
+    await fetch(`${env.UPSTASH_REDIS_REST_URL}/set/${redisKey}?ex=${ttl}`, {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(body)
     });
-    const resp = await response.text()
-    console.log(body)
-    await message.forward("pzx521521@qq.com")
+
+    console.log(body);
+    await message.forward("pzx521521@qq.com");
   },
 
-  async fetch(request, env, ctx) {
+  async fetch(request, env) {
     try {
-      const headers = {
-        'Authorization': `Bearer ${env.UPSTASH_REDIS_REST_TOKEN}`,
-        'Content-Type': 'application/json'
-      };
-
-      // 检查请求路径
       const url = new URL(request.url);
-      const pathParts = url.pathname.split('/').filter(Boolean); // 移除空字符串
-      const isAllData = pathParts[0] === 'all';
-      const digitFilter = pathParts[1]; // 获取数字过滤器（如果存在）
+      const pathParts = url.pathname.split('/').filter(Boolean);
 
-      // 获取所有键
-      const keys = await getKeys(env.UPSTASH_REDIS_REST_URL, headers);
+      // 获取 pattern 参数（如果存在）
+      const pattern = url.searchParams.get('pattern');
 
-      // 如果不是请求 /all，只返回键列表
-      if (!isAllData) {
-        return createResponse({ keys });
+      // 路由: GET /all/:digitFilter?pattern=xxx
+      if (pathParts[0] === 'all' && pathParts[1]) {
+        return await handleGetAllWithDigitFilter(env, pathParts[1], pattern);
       }
 
-      // 如果是请求 /all，获取所有值
-      if (keys.length > 0) {
-        const values = await getValues(env.UPSTASH_REDIS_REST_URL, headers, keys);
-
-        // 组合键值对
-        const result = keys.map((key, index) => ({
-          key: key,
-          value: values[index]
-        }));
-
-        // 如果指定了数字位数过滤器
-        if (digitFilter) {
-          const digitLength = parseInt(digitFilter);
-          const regex = new RegExp(`\\b\\d{${digitLength}}\\b`);
-          const filteredResult = result.find(item => {
-            try {
-              const content = JSON.parse(item.value).content.replace(/\s+/g, '');
-              return regex.test(content);
-            } catch {
-              return false;
-            }
-          });
-
-          if (filteredResult) {
-            const content = JSON.parse(filteredResult.value).content.replace(/\s+/g, '');
-            const match = content.match(regex);
-            return createResponseText(match ? match[0] : '');
-          }
-          return createResponseText('');
-        }
-
-        return createResponse({ result });
+      // 路由: GET /all?pattern=xxx
+      if (pathParts[0] === 'all') {
+        return await handleGetAll(env, pattern);
       }
 
-      return createResponse({ result: [] });
+      // 路由: GET /?pattern=xxx
+      return await handleGetKeys(env, pattern);
 
     } catch (error) {
       console.error('Error:', error);
