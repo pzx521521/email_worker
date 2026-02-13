@@ -79,11 +79,16 @@ export default {
     //   });
     // }
     const { from, to } = message;
+    const headerFrom = message.headers.get("from");  // 真正发件人
     const subject = message.headers.get("subject")
-    const redisKey = `${from}|${to}`;  // Redis 键名
+    const redisKey = `${headerFrom}|${to}`;  // Redis 键名
     const ttl = 60 * 15;  // 设置 15 分钟的过期时间（单位：秒）
     // const headersObj = Object.fromEntries(message.headers);
-    const body = { "subject": subject, "content": parsedEmail.text ? parsedEmail.text : parsedEmail.html };  // 这是邮件正文部分
+    // 原始正文
+    let content = parsedEmail.text ? parsedEmail.text : parsedEmail.html;
+    // 新增这一行：清理尾部的 \u0000
+    content = content.replace(/\u0000+$/g, "");
+    const body = { "subject": subject, "content": content };  // 这是邮件正文部分
     const response = await fetch(`${redisUrl}/set/${redisKey}?ex=${ttl}`, {
       method: 'POST',
       headers: headers,
