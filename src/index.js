@@ -87,7 +87,7 @@ export default {
     // 原始正文
     let content = parsedEmail.text ? parsedEmail.text : parsedEmail.html;
     // 新增这一行：清理尾部的 \u0000
-    content = content.replace(/\u0000+$/g, "");
+    content = content.replace(/\u0000+/g, "");
     const body = { "subject": subject, "content": content };  // 这是邮件正文部分
     const response = await fetch(`${redisUrl}/set/${redisKey}?ex=${ttl}`, {
       method: 'POST',
