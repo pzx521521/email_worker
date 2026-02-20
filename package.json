@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "type": "module",
   "devDependencies": {
-    "wrangler": "3.101.0",
+    "wrangler": "3.114.17",
     "express": "^4.21.2"
   },
   "private": true,
