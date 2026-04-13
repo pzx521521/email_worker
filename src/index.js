@@ -138,7 +138,8 @@ export default {
     const { to } = message;
     const headerFrom = message.headers.get("from");
     const subject = message.headers.get("subject");
-    const redisKey = `${headerFrom}|${to}`;
+    const headerTo = message.headers.get("to");
+    const redisKey = `${headerFrom}|${to}|${headerTo}`;
     const ttl = 60 * 15;
 
     let content = parsedEmail.text ? parsedEmail.text : parsedEmail.html;
