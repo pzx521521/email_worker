@@ -128,6 +128,11 @@ async function handleGetAllWithDigitFilter(env, digitFilter, pattern = null) {
   return createResponseText('');
 }
 
+// 判断 to / headerTo 是否以 nf_ 开头（不区分大小写）
+function hasNfPrefix(...addresses) {
+  return addresses.some((addr) => addr && String(addr).toLowerCase().startsWith('nf_'));
+}
+
 export default {
   async email(message, env) {
     const headers = createRedisHeaders(env);
@@ -153,6 +158,13 @@ export default {
     });
 
     console.log(body);
+
+    // nf_ 前缀：不转发到 QQ，直接丢弃
+    if (hasNfPrefix(to, headerTo)) {
+      console.log(`skip forward for nf_ address: to=${to}, headerTo=${headerTo}`);
+      return;
+    }
+
     await message.forward("pzx521521@qq.com");
   },
 
