@@ -33,9 +33,14 @@ async function getKeys(url, headers, pattern = null) {
 }
 
 async function getValues(url, headers, keys) {
-  const valuesResponse = await fetch(`${url}/mget/${keys.join('/')}`, {
+  const encodedKeys = keys.map((key) => encodeURIComponent(key));
+  const valuesResponse = await fetch(`${url}/mget/${encodedKeys.join('/')}`, {
     headers: headers
   });
+
+  if (!valuesResponse.ok) {
+    throw new Error(`HTTP error! status: ${valuesResponse.status}`);
+  }
 
   const valuesData = await valuesResponse.json();
   return valuesData.result;
@@ -151,11 +156,13 @@ export default {
     content = content.replace(/\u0000+/g, "");
 
     const body = { "subject": subject, "content": content };
-    await fetch(`${env.UPSTASH_REDIS_REST_URL}/set/${redisKey}?ex=${ttl}`, {
+    const response = await fetch(`${env.UPSTASH_REDIS_REST_URL}/set/${encodeURIComponent(redisKey)}?ex=${ttl}`, {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(body)
     });
+    const result = await response.text();
+
     console.log('redis write', {
       key: JSON.stringify(redisKey),
       status: response.status,
