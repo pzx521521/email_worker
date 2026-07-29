@@ -156,8 +156,13 @@ export default {
       headers: headers,
       body: JSON.stringify(body)
     });
+    console.log('redis write', {
+      key: JSON.stringify(redisKey),
+      status: response.status,
+      result,
+    });
+    if (!response.ok) throw new Error(`Redis 写入失败：${result}`);
 
-    console.log(body);
 
     // nf_ 前缀：不转发到 QQ，直接丢弃
     if (hasNfPrefix(to, headerTo)) {
