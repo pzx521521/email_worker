@@ -1,7 +1,16 @@
+# pnpm-workspace.yaml(兼容 pnpm 10 / 11)
+# - pnpm 10(CF 构建环境)要求 packages 字段必须存在
+# - pnpm 11 使用 allowBuilds(map),pnpm 10 使用 onlyBuiltDependencies(数组),两者都保留
+packages:
+  - "."
 allowBuilds:
   esbuild: true
   sharp: true
   workerd: true
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - workerd
 overrides:
   # miniflare 锁定 sharp 0.35.2(有 libheif 高危漏洞 GHSA-g89c-p67h-r497),
   # 强制升到修复版本 0.35.4 以消除 Dependabot 告警
