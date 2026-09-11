@@ -2,3 +2,7 @@ allowBuilds:
   esbuild: true
   sharp: true
   workerd: true
+overrides:
+  # miniflare 锁定 sharp 0.35.2(有 libheif 高危漏洞 GHSA-g89c-p67h-r497),
+  # 强制升到修复版本 0.35.4 以消除 Dependabot 告警
+  sharp: 0.35.4
