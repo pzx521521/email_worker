@@ -1,0 +1,38 @@
+# CI 防线:所有 Dependabot PR 合并前必须通过此检查
+# 验证依赖可安装 + Worker 语法/配置正确(无需 Cloudflare 凭据)
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+# 只保留最新一次运行,避免积压
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: dependency-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Wrangler syntax/configuration check (dry-run)
+        run: pnpm exec wrangler deploy --dry-run
