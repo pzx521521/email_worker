@@ -72,11 +72,10 @@ curl 'https://<worker-host>/?pattern=*gmail*'
 
 ### `GET /all`
 
-列出键值对。
+获取到邮件内容, `pattern`支持通配符`*`,一般填写为`*邮箱*`进行过滤
 
 ```bash
-curl 'https://<worker-host>/all'
-curl 'https://<worker-host>/all?pattern=*nf_*'
+curl 'https://<worker-host>/all?pattern=*nf_user@yourdomain.com*'
 ```
 
 响应：
@@ -103,17 +102,7 @@ curl 'https://<worker-host>/all/6?pattern=*user@yourdomain.com*'
 
 - 成功：响应 body 为验证码字符串，如 `123456`
 - 未找到：空字符串
-
-**典型自动化用法**（注册脚本轮询）：
-
-```bash
-# 伪代码：发送注册请求后轮询
-for i in $(seq 1 30); do
-  code=$(curl -s "https://<worker-host>/all/6?pattern=*mybox@domain.com*")
-  [ -n "$code" ] && echo "$code" && break
-  sleep 2
-done
-```
+- 尽量不要使用 `GET /all/:digitFilter`,因为验证码不一定是纯数字,并且6位数字有可能找到多组,推荐使用`GET /all?pattern=xxx`获取邮件后自行查找
 
 ## 收信与转发规则
 
