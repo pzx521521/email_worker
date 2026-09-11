@@ -13,7 +13,7 @@ const { default: worker } = await import(workerPath);
 
 const app = express();
 
-app.all('*', async (req, res) => {
+app.use(async (req, res) => {
     try {
         // 构造 Worker Request 对象
         const workerRequest = new Request(`http://localhost${req.url}`, {

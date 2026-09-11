@@ -1,0 +1,12 @@
+# Dependabot 配置:持续维护 npm 依赖(含安全修复)
+# 文档: https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+version: 2
+updates:
+  - package-ecosystem: "npm" # npm/pnpm 依赖
+    directory: "/" # 仓库根目录(package.json + pnpm-lock.yaml)
+    target-branch: "master"
+    schedule:
+      interval: "weekly" # 每周检查一次新版本
+    open-pull-requests-limit: 20
+    labels:
+      - "dependencies"

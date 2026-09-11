@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "type": "module",
   "devDependencies": {
-    "wrangler": "3.114.17",
-    "express": "^4.21.2"
+    "express": "^5.2.1",
+    "wrangler": "4.130.0"
   },
   "private": true,
   "scripts": {
@@ -13,6 +13,6 @@
     "server": "node scripts/server.js"
   },
   "dependencies": {
-    "postal-mime": "^2.4.1"
+    "postal-mime": "^3.0.0"
   }
 }
