@@ -4,7 +4,7 @@
   "type": "module",
   "devDependencies": {
     "express": "^5.2.1",
-    "wrangler": "4.130.0"
+    "wrangler": "4.147.0"
   },
   "private": true,
   "scripts": {
