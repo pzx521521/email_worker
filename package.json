@@ -13,6 +13,6 @@
     "server": "node scripts/server.js"
   },
   "dependencies": {
-    "postal-mime": "^3.0.0"
+    "postal-mime": "^4.0.5"
   }
 }
