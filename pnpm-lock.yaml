@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       postal-mime:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^4.2.0
+        version: 4.2.0
     devDependencies:
       express:
         specifier: ^5.2.1
@@ -638,8 +638,9 @@ packages:
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
 
-  postal-mime@3.0.0:
-    resolution: {integrity: sha512-Z4a9ar2Bv3YpK3IXag+Yda30k7bMZfpRuUGyqtHnZ2pjHG8Bl62EhZIk4n1dzv00gfzP9g+94e9kd8+XmjVWLA==}
+  postal-mime@4.2.0:
+    resolution: {integrity: sha512-QG5Rh8wY/zjwFF1lKWcBbwWcAWR5jWodmMPL4gMik43XDLebtWoAAPyG0lrE2kYYZ5IHTASrepGuGO0YIwNKAg==}
+    engines: {node: '>=20'}
 
   proxy-addr@2.0.8:
     resolution: {integrity: sha512-5nnx0yGyVUcY6t9RnWcARWtwT9F1D8O9rt08htPvnd49W1IgZtmLkhu9WfMzQj1cFxjHIO6connUNVW5k7AVyQ==}
@@ -1268,7 +1269,7 @@ snapshots:
 
   pathe@2.0.3: {}
 
-  postal-mime@3.0.0: {}
+  postal-mime@4.2.0: {}
 
   proxy-addr@2.0.8:
     dependencies:
