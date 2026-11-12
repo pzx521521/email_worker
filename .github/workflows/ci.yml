@@ -35,4 +35,4 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Wrangler syntax/configuration check (dry-run)
-        run: pnpm exec wrangler deploy --dry-run
+        run: pnpm dlx wrangler deploy --dry-run

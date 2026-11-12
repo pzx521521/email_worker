@@ -1,13 +1,5 @@
 # pnpm-workspace.yaml(兼容 pnpm 10 / 11)
 # - pnpm 10(CF 构建环境)要求 packages 字段必须存在
-# - pnpm 11 使用 allowBuilds(map),pnpm 10 使用 onlyBuiltDependencies(数组),两者都保留
+# - 本地工具(wrangler)通过 pnpm dlx 运行,不进 lockfile,避免 dev 依赖漏洞告警
 packages:
   - "."
-allowBuilds:
-  esbuild: true
-  sharp: true
-  workerd: true
-onlyBuiltDependencies:
-  - esbuild
-  - sharp
-  - workerd

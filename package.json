@@ -2,17 +2,13 @@
   "name": "email_worker_parser",
   "version": "0.0.0",
   "type": "module",
-  "devDependencies": {
-    "express": "^5.2.1",
-    "wrangler": "4.130.0"
-  },
   "private": true,
   "scripts": {
-    "dev": "wrangler dev",
-    "publish": "wrangler publish",
+    "dev": "pnpm dlx wrangler dev",
+    "publish": "pnpm dlx wrangler deploy",
     "server": "node scripts/server.js"
   },
   "dependencies": {
-    "postal-mime": "^3.0.0"
+    "postal-mime": "^4.2.0"
   }
 }

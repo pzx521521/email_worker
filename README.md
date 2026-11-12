@@ -38,7 +38,7 @@ HTTP fetch() 查询 Redis（keys / all / 按位数提取验证码）
 
 ```bash
 # 设置 Redis Token（不要写进仓库）
-npx wrangler secret put UPSTASH_REDIS_REST_TOKEN
+pnpm dlx wrangler secret put UPSTASH_REDIS_REST_TOKEN
 ```
 
 ## Redis 存储约定
@@ -116,28 +116,28 @@ curl 'https://<worker-host>/all/6?pattern=*user@yourdomain.com*'
 ## 本地开发
 
 ```bash
-pnpm install   # 或 npm install
+pnpm install   # 只安装运行时依赖 postal-mime
 
-# Cloudflare 本地 dev（需登录 wrangler，secret 可用 .dev.vars）
+# Cloudflare 本地 dev（wrangler 由 pnpm dlx 按需下载最新版）
 pnpm dev
 
-# 简易 Express 包装（仅测 fetch 路由，不测 email 入口）
+# 简易 HTTP 包装（仅测 fetch 路由，不测 email 入口）
 pnpm server    # http://localhost:3000
 ```
 
-`.dev.vars` 示例（勿提交 git）：
+`.dev.vars` 示例（勿提交 git，`pnpm dev` 和 `pnpm server` 都会读取）：
 
 ```
 UPSTASH_REDIS_REST_TOKEN=你的token
 ```
 
-> 注意：`scripts/server.js` 内若硬编码了 token，仅适合本机调试；生产务必用 `wrangler secret`。
+> 本地调试与生产都不需要在仓库里写死 token：`pnpm server` 从 `.dev.vars` / 环境变量读取，生产用 `wrangler secret`。
 
 ## 部署
 
 ```bash
 pnpm publish
-# 等价：npx wrangler publish
+# 等价：pnpm dlx wrangler deploy
 ```
 
 ### Email Routing 配置（Dashboard 或 CLI）
@@ -151,7 +151,7 @@ pnpm publish
 ```
 email_worker/
 ├── src/index.js        # Worker：email() + fetch()
-├── scripts/server.js   # 本地 Express 调试 HTTP 接口
+├── scripts/server.js   # 本地 node:http 调试 HTTP 接口（无第三方依赖）
 ├── wrangler.toml       # Worker 配置
 ├── package.json
 └── README.md
@@ -169,6 +169,7 @@ email_worker/
 
 ## 安全提醒
 
-- **不要**把 `UPSTASH_REDIS_REST_TOKEN` 提交到 git。
+- **不要**把 `UPSTASH_REDIS_REST_TOKEN` 提交到 git；本仓库历史中若出现过明文 token，请到 Upstash 控制台轮换。
+- 依赖只保留运行时所需的 `postal-mime`；wrangler 通过 `pnpm dlx` 运行，不进 lockfile，避免 dev 依赖漏洞刷屏。
 - 公开 Worker URL 等于公开读邮箱内容缓存；生产建议加鉴权（Header Token / Cloudflare Access）。
 - 本服务面向个人验证码自动化，勿用于未授权邮箱拦截。
